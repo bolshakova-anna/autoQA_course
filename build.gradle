@@ -1,0 +1,47 @@
+apply plugin: 'java'
+
+defaultTasks 'clean', 'test'
+
+sourceSets {
+  main {
+    java {srcDir 'src'}
+    resources {srcDir 'src'}
+  }
+  test {
+    java {srcDir 'test'}
+    resources {srcDir 'test'}
+  }
+}
+
+repositories{
+  mavenCentral()
+}
+
+dependencies {
+  testCompile 'junit:junit:4.13.1'
+  testCompile 'org.hamcrest:hamcrest-all:1.3'
+  testCompile 'com.codeborne:selenide:5.18.0'
+  testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.30'
+}
+
+task libs(type: Sync) {
+  from configurations.testCompile
+  into "$buildDir/lib"
+}
+
+compileJava.dependsOn libs
+
+[compileJava, compileTestJava]*.options.collect {options -> options.encoding = 'UTF-8'}
+[compileJava, compileTestJava]*.options.collect {options -> options.debug = true}
+[compileJava, compileTestJava]*.sourceCompatibility = 1.8
+[compileJava, compileTestJava]*.targetCompatibility = 1.8
+
+test {
+  systemProperties = [
+    'file.encoding': 'UTF-8',
+    'selenide.browser': 'firefox',
+    'gmail.username': System.getProperty('OK.username', "enter-your-gmail-username"),
+    'gmail.password': System.getProperty('OK.password', "enter-your-gmail-password")
+  ]
+  testLogging.showStandardStreams = true
+}
